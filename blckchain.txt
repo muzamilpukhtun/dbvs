@@ -1,0 +1,12 @@
+Gr85tDdQohG6WBheerLtoACKCNU1xGpcfNv3ELqd72bX 
+
+
+
+
+
+Deploying cluster: https://api.devnet.solana.com  
+Upgrade authority: /home/muzamilkhaan/.config/solana/id.json     
+Deploying program "pdc_blockchain_part"...       
+Program path: /home/muzamilkhaan/pdc-blockchain-part/target/deploy/pdc_blockchain_part.so...
+Program Id: D8HmzgTCpv8DhnFegGSG3ZHD1NfH5gZUhpEeEDE9a487                                                                                                                                                                                       
+Signature: H2PMRjcQGBcmCtKocKVjp4AYtdq2L5KpHWaN2hq8KBVRwJ5P7Ne5StaZMWQ4GJUzeR97ipLCHb3KMuevfFg6zv6 

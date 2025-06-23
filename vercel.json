@@ -1,0 +1,14 @@
+{
+    "functions": {
+      "api/sync-votes/route.ts": {
+        "runtime": "edge"
+      }
+    },
+    "cron": [
+      {
+        "path": "/api/sync-votes",
+        "schedule": "*/2 * * * *"  
+      }
+    ]
+  }
+  

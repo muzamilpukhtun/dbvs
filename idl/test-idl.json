@@ -1,0 +1,44 @@
+{
+    "version": "0.1.0",
+    "name": "pdc_blockchain_part",
+    "instructions": [
+      {
+        "name": "cast_vote",
+        "accounts": [
+          {
+            "name": "voteAccount",
+            "isMut": true,
+            "isSigner": false
+          },
+          {
+            "name": "user",
+            "isMut": true,
+            "isSigner": true
+          }
+        ],
+        "args": [
+          {
+            "name": "poll_id",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "accounts": [
+      {
+        "name": "VoteAccount",
+        "type": {
+          "kind": "struct",
+          "fields": [
+            {
+              "name": "bump",
+              "type": "u8"
+            }
+          ]
+        }
+      }
+    ],
+    "metadata": {
+      "address": "D8HmzgTCpv8DhnFegGSG3ZHD1NfH5gZUhpEeEDE9a487"
+    }
+  }
