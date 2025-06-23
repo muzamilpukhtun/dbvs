@@ -1,10 +1,10 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import { usePoll } from "../context/PollContext";
 import { useAuth } from "../context/AuthContext";
 
 const CreatePoll = () => {
-  const { user } = useAuth();
+  const { Arid } = useAuth();
   const [pollData, setPollData] = useState({
     pollName: "",
     endDate: "",
@@ -42,11 +42,19 @@ const CreatePoll = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!Arid) {
+      alert("User not authenticated.");
+      return;
+    }
+
     const result = await createPoll({
-      ...pollData,
-      createdBy: user?.name || "Anonymous",
+      pollName: pollData.pollName,
+      endDate: pollData.endDate,
+      options: pollData.options,
+      createdBy: String(Arid),  // Only logged-in Arid goes to backend
     });
-  
+
     if (result.success) {
       alert("Poll created successfully!");
     } else {
@@ -56,7 +64,7 @@ const CreatePoll = () => {
 
   return (
     <div className="bg-white text-black dark:text-white dark:bg-gray-900 flex flex-col md:flex-row min-h-screen">
-      {/* Left side - Logo and App Name */}
+      
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center bg-gray-600 p-4 md:p-0">
         <div className="text-white text-center">
           <img src="/Logo.png" alt="DBVS Logo" className="w-32 md:w-64 h-auto mb-4" />
@@ -64,7 +72,6 @@ const CreatePoll = () => {
         </div>
       </div>
 
-      {/* Right side - Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center p-4 md:p-8">
         <div className="p-4 md:p-8 rounded-lg dark:shadow-blue-200 shadow-xl w-full max-w-md">
           <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-center">Create New Poll</h2>
