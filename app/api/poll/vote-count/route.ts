@@ -106,59 +106,59 @@
 //       );
 //     }
 
-// Parse and validate vote data
-// let voteData: VoteData;
-// try {
-//   // First try to parse as wrapped format
-//   let parsedData: ParsedVoteData | VoteData = JSON.parse(memoData);
+// // Parse and validate vote data
+// // let voteData: VoteData;
+// // try {
+// //   // First try to parse as wrapped format
+// //   let parsedData: ParsedVoteData | VoteData = JSON.parse(memoData);
   
-//   // Handle both formats:
-//   // 1. Wrapped format: { type: "vote", data: { poll_id, option, ... } }
-//   // 2. Direct format: { poll_id, option, ... }
-//   if (typeof (parsedData as ParsedVoteData).type !== 'undefined') {
-//     // This is the wrapped format
-//     if ((parsedData as ParsedVoteData).type !== 'vote' || !(parsedData as ParsedVoteData).data) {
-//       throw new Error("Invalid wrapped vote data structure - missing type or data");
-//     }
-//     voteData = (parsedData as ParsedVoteData).data;
-//   } else {
-//     // This is the direct format
-//     voteData = parsedData as VoteData;
-//   }
+// //   // Handle both formats:
+// //   // 1. Wrapped format: { type: "vote", data: { poll_id, option, ... } }
+// //   // 2. Direct format: { poll_id, option, ... }
+// //   if (typeof (parsedData as ParsedVoteData).type !== 'undefined') {
+// //     // This is the wrapped format
+// //     if ((parsedData as ParsedVoteData).type !== 'vote' || !(parsedData as ParsedVoteData).data) {
+// //       throw new Error("Invalid wrapped vote data structure - missing type or data");
+// //     }
+// //     voteData = (parsedData as ParsedVoteData).data;
+// //   } else {
+// //     // This is the direct format
+// //     voteData = parsedData as VoteData;
+// //   }
   
-//   // Validate required fields
-//   if (!voteData.poll_id || !voteData.option) {
-//     throw new Error("Missing required vote fields (poll_id or option)");
-//   }
+// //   // Validate required fields
+// //   if (!voteData.poll_id || !voteData.option) {
+// //     throw new Error("Missing required vote fields (poll_id or option)");
+// //   }
 
-//   // Validate field types
-//   if (typeof voteData.poll_id !== 'string' || typeof voteData.option !== 'string') {
-//     throw new Error("poll_id and option must be strings");
-//   }
+// //   // Validate field types
+// //   if (typeof voteData.poll_id !== 'string' || typeof voteData.option !== 'string') {
+// //     throw new Error("poll_id and option must be strings");
+// //   }
 
-//   // Set default values
-//   if (!voteData.voter_id) voteData.voter_id = "anonymous";
-//   if (!voteData.timestamp) voteData.timestamp = new Date().toISOString();
+// //   // Set default values
+// //   if (!voteData.voter_id) voteData.voter_id = "anonymous";
+// //   if (!voteData.timestamp) voteData.timestamp = new Date().toISOString();
 
-// } catch (err: any) {
-//   console.error('Data parsing error:', err);
-//   return NextResponse.json(
-//     { 
-//       error: "Invalid vote data format",
-//       details: {
-//         message: err.message,
-//         rawData: memoData,
-//         expectedFormats: [
-//           "Format 1: { type: 'vote', data: { poll_id: string, option: string, ... } }",
-//           "Format 2: { poll_id: string, option: string, ... }"
-//         ]
-//       }
-//     },
-//     { status: 400 }
-//   );
-// }
+// // } catch (err: any) {
+// //   console.error('Data parsing error:', err);
+// //   return NextResponse.json(
+// //     { 
+// //       error: "Invalid vote data format",
+// //       details: {
+// //         message: err.message,
+// //         rawData: memoData,
+// //         expectedFormats: [
+// //           "Format 1: { type: 'vote', data: { poll_id: string, option: string, ... } }",
+// //           "Format 2: { poll_id: string, option: string, ... }"
+// //         ]
+// //       }
+// //     },
+// //     { status: 400 }
+// //   );
+// // }
 
-// Parse and validate vote data
+// // Parse and validate vote data
 
 
 // let voteData: VoteData;
@@ -235,30 +235,50 @@
 
 
 //app/poll/vote-count
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { NextResponse } from 'next/server';
+import { Connection, PublicKey, Keypair } from '@solana/web3.js';
+import wallet from '@/wallet.json';
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url)
-  const pollId = searchParams.get('poll_id')
-  
-  if (!pollId) {
-    return NextResponse.json(
-      { error: "poll_id is required" },
-      { status: 400 }
-    )
+const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
+
+export async function GET() {
+  const connection = new Connection("https://api.devnet.solana.com");
+
+  try {
+    const fundedWallet = Keypair.fromSecretKey(Uint8Array.from(wallet));
+    const devWalletPubkey = fundedWallet.publicKey;
+
+    const sigs = await connection.getSignaturesForAddress(devWalletPubkey, { limit: 100 });
+    const allPolls = [];
+
+    for (const sigInfo of sigs) {
+      const tx = await connection.getTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
+      if (!tx?.transaction?.message?.compiledInstructions) continue;
+
+      const programIds = tx.transaction.message.staticAccountKeys.map(k => k.toString());
+
+      for (const ix of tx.transaction.message.compiledInstructions) {
+        const programId = programIds[ix.programIdIndex];
+
+        if (programId === MEMO_PROGRAM_ID.toString() && ix.data) {
+          try {
+            const memoDataStr = Buffer.from(ix.data, "base64").toString("utf8");
+            const memoData = JSON.parse(memoDataStr);
+
+            if (memoData?.type === "vote" && memoData?.data?.poll_id) {
+              allPolls.push(memoData.data);
+            }
+          } catch (err) {
+            console.warn("Invalid memo JSON ignored:", err.message);
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({ polls: allPolls });
+
+  } catch (err: any) {
+    console.error("API Error:", err.message);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  const counts = await prisma.option.groupBy({
-    by: ['text'],
-    where: { pollId: parseInt(pollId) },
-    _sum: { votes: true }
-  })
-
-  const result = counts.reduce((acc, { text, _sum }) => {
-    acc[text] = _sum.votes || 0
-    return acc
-  }, {})
-
-  return NextResponse.json(result)
 }

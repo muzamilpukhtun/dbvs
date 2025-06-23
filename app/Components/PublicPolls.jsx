@@ -131,10 +131,10 @@ const PublicPolls = () => {
       setPolls(pollsData.polls || []);
 
 
-         // 1. Get voted polls from Solana
-         const votedRes = await fetch(`/api/user/${Arid}`);
-         const votedData = await votedRes.json();
-         setVotedPolls(votedData.votedPolls || []);
+        //  // 1. Get voted polls from Solana
+        //  const votedRes = await fetch(`/api/user/${Arid}`);
+        //  const votedData = await votedRes.json();
+        //  setVotedPolls(votedData.votedPolls || []);
 
     } catch (err) {
       console.error("Error fetching polls or votes:", err);
