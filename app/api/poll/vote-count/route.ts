@@ -252,6 +252,9 @@ export async function GET() {
     const allPolls = [];
 
     for (const sigInfo of sigs) {
+      // ✅ Rate Limit Handling
+      await new Promise(res => setTimeout(res, 300)); // Adjust delay as needed (300ms is safe)
+
       const tx = await connection.getTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
       if (!tx?.transaction?.message?.compiledInstructions) continue;
 
@@ -263,6 +266,10 @@ export async function GET() {
         if (programId === MEMO_PROGRAM_ID.toString() && ix.data) {
           try {
             const memoDataStr = Buffer.from(ix.data, "base64").toString("utf8");
+
+            // ✅ JSON Parse only if string starts with `{`
+            if (!memoDataStr.trim().startsWith("{")) continue;
+
             const memoData = JSON.parse(memoDataStr);
 
             if (memoData?.type === "vote" && memoData?.data?.poll_id) {

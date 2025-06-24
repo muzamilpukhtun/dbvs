@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { usePoll } from "../context/PollContext";
 import { useAuth } from "../context/AuthContext";
 

@@ -15,38 +15,37 @@ model User {
   createdAt DateTime @default(now())
 }
 
-
 model Poll {
-  id        Int       @id @default(autoincrement())
-  name      String
-  endDate   DateTime
-  createdAt DateTime  @default(now())
-  createdBy String    // <- Add this to link with user (like arid or email)
-  options   Option[]
+  id                Int       @id @default(autoincrement())
+  name              String
+  endDate           DateTime
+  isResultAnnounced Boolean   @default(false)
+  createdBy         String
+  options           Option[]
+  votes             Vote[]
+  createdAt         DateTime  @default(now()) // Yeh line add karo
 }
 
+
+model Vote {
+  id       Int    @id @default(autoincrement())
+  pollId   Int
+  poll     Poll   @relation(fields: [pollId], references: [id])
+  optionId Int
+  option   Option @relation(fields: [optionId], references: [id])
+  voterId  String
+}
 
 model Option {
   id      Int    @id @default(autoincrement())
   text    String
   votes   Int    @default(0)
-  poll    Poll   @relation(fields: [pollId], references: [id])
   pollId  Int
+  poll    Poll   @relation(fields: [pollId], references: [id])
+  vote    Vote[]  // Add this relation back to Vote
 }
 
 
-model Vote {
-  id        Int      @id @default(autoincrement())
-  pollId    Int
-  optionId  Int
-  voterId   String   // Can be wallet address or user ID
-  txHash    String   @unique
-  status    String   @default("PENDING") // PENDING, CONFIRMED, FAILED
-  createdAt DateTime @default(now())
-
-  @@index([pollId])
-  @@index([voterId])
-}
 
 model PendingVote {
   id       Int    @id @default(autoincrement())

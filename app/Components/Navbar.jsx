@@ -106,9 +106,10 @@ const Navbar = () => {
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
             {isLoggedIn ? (
               <>
-                <Link href="/my-polls" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">My Polls</Link>
+                <Link href="/my-polls" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">My Active Polls</Link>
                 <Link href="/public-polls" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">Public Polls</Link>
                 <Link href="/create-poll" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">Create Poll</Link>
+                <Link href="/results" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">Results</Link>
                 <button onClick={handleLogout} className="text-gray-700 dark:text-white hover:text-red-600 font-semibold px-3 py-2 rounded transition">Log Out</button>
               </>
             ) : (
@@ -140,8 +141,9 @@ const Navbar = () => {
         <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-900 backdrop-blur-md shadow-md">
           {isLoggedIn ? (
             <>
-              <Link href="/my-polls" className="block text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded" onClick={handleNavClick}>My Polls</Link>
+              <Link href="/my-polls" className="block text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded" onClick={handleNavClick}>My Active Polls</Link>
               <Link href="/public-polls" className="block text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded" onClick={handleNavClick}>Public Polls</Link>
+              <Link href="/results" className="text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded">Results</Link>
               <Link href="/create-poll" className="block text-gray-700 dark:text-white hover:text-blue-600 font-semibold px-3 py-2 rounded" onClick={handleNavClick}>Create Poll</Link>
               <button onClick={() => { handleLogout(); handleNavClick(); }} className="block text-red-600 font-semibold px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800">Log Out</button>
             </>

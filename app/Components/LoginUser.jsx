@@ -62,7 +62,7 @@ export default function LoginUser() {
               required
             />
             <input
-              type="number"
+              type="password"
               placeholder="Password"
               className="border p-3 w-full rounded-lg text-sm md:text-base"
               value={password}

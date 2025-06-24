@@ -1,10 +1,26 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Loader from './components/Loader';
 
 const Page = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for demonstration
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000); // Adjust time as needed
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <>
       <div className="min-h-screen flex flex-col md:flex-row items-center justify-between px-4 md:px-12 py-8 gap-8 bg-white dark:bg-black text-black dark:text-white transition-colors">
@@ -200,7 +216,7 @@ const Page = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               { name: 'Muzamil Khaan', role: 'Web Backend and Blockchain Developer', image: '/muzamil.jpg' },
-              { name: 'Haroon Lone', role: 'Android Backend and Blockchain Developer', image: '/muzamil.jpg' },
+              { name: 'Haroon Lone', role: 'Android Backend and Blockchain Developer', image: '/haroon.jpg' },
               { name: 'Shahmeer Ali', role: 'Android DB Integration Manager ', image: '/shahmeer.png' },
               { name: 'Mubashir Sohail', role: 'Front End Developer Mobile App', image: '/mubashir.png' },
               { name: 'Faseeh Ur Rehman Hadi', role: 'Front End Web Developer', image: '/faseeh.png' },

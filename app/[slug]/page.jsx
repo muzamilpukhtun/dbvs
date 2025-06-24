@@ -4,6 +4,7 @@
     import MyPolls from '../Components/MyPolls'
     import CreatePoll from '../Components/CreatePoll'
     import CreateUser from '../Components/CreateUser'
+    import PollResults from '../Components/PollResults'
 import LoginUser from '../Components/LoginUser'
 
     const page = async ({ params }) => {
@@ -21,6 +22,10 @@ import LoginUser from '../Components/LoginUser'
             return <CreateUser/>
         } else if (slug === 'login') {
             return <LoginUser/>
+        } else if (slug === 'logout') {
+        }
+         else if (slug === 'results') {
+            return <PollResults/>
         } else if (slug === 'logout') {
             // Clear auth token and redirect to login
             localStorage.removeItem('authToken')

@@ -186,33 +186,222 @@
 
 
 // app/api/vote/route.ts
+// import { Connection, Transaction, TransactionInstruction, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
+// import { NextResponse } from 'next/server';
+// import { getServerSession } from 'next-auth';
+// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+// import wallet from '@/wallet.json';
+
+// export async function POST(req: Request) {
+//   const connection = new Connection('https://api.devnet.solana.com');
+//   const fundedWallet = Keypair.fromSecretKey(Uint8Array.from(wallet));
+
+//   try {
+//     // Get logged in user session
+//     const session = await getServerSession(authOptions);
+//     if (!session?.user?.arid) {
+//       return NextResponse.json(
+//         { error: "Unauthorized - Please login first" },
+//         { status: 401 }
+//       );
+//     }
+
+//     const { poll_id, option, optionId } = await req.json();
+//     const voter_id = session.user.arid; // Use logged in user's arid
+    
+//     // Validation
+//     if (!poll_id || !option) {
+//       return NextResponse.json(
+//         { error: "poll_id and option are required" }, 
+//         { status: 400 }
+//       );
+//     }
+
+//     if (typeof poll_id !== 'string' || typeof option !== 'string') {
+//       return NextResponse.json(
+//         { error: "poll_id and option must be strings" },
+//         { status: 400 }
+//       );
+//     }
+
+//     // Prepare vote data
+//     const voteData = {
+//       type: "vote",
+//       data: {
+//         poll_id,
+//         option,
+//         voter_id,
+//         timestamp: new Date().toISOString()
+//       }
+//     };
+    
+//     // Create transaction
+//     const transaction = new Transaction().add(
+//       SystemProgram.transfer({
+//         fromPubkey: fundedWallet.publicKey,
+//         toPubkey: fundedWallet.publicKey,
+//         lamports: 1_000_000, // 0.001 SOL
+//       }),
+//       new TransactionInstruction({
+//         keys: [],
+//         programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+//         data: Buffer.from(JSON.stringify(voteData)),
+//       })
+//     );
+
+//     // Finalize transaction
+//     const { blockhash } = await connection.getLatestBlockhash();
+//     transaction.recentBlockhash = blockhash;
+//     transaction.feePayer = fundedWallet.publicKey;
+//     transaction.sign(fundedWallet);
+
+//     // Send transaction
+//     const rawTx = transaction.serialize();
+//     const txSignature = await connection.sendRawTransaction(rawTx);
+//     const confirmation = await connection.confirmTransaction(txSignature);
+
+//     // ✅ PendingVote Queue Me Store Karo
+//     await prisma.pendingVote.create({
+//       data: {
+//         pollId: Number(poll_id),
+//         optionId: Number(optionId), 
+//         voterId: Number(voter_id),
+//         txData: {
+//           txHash: txSignature,
+//           voteData
+//         }
+//       }
+//     });
+
+//     return NextResponse.json({
+//       status: 'success',
+//       txSignature,
+//       explorerUrl: `https://explorer.solana.com/tx/${txSignature}?cluster=devnet`,
+//       voteData,
+//       confirmation
+//     });
+
+//   } catch (error: any) {
+//     console.error('Voting failed:', {
+//       error: error.message,
+//       stack: error.stack
+//     });
+    
+//     return NextResponse.json(
+//       { 
+//         error: error.message || "Voting failed",
+//         details: error.details || null
+//       },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+
+// import { Connection, Transaction, TransactionInstruction, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
+// import { NextResponse } from 'next/server';
+// import wallet from '@/wallet.json';
+// import prisma from '@/lib/prisma'; // Remove if not using Prisma
+
+// export async function POST(req: Request) {
+//   const connection = new Connection('https://api.devnet.solana.com');
+//   const fundedWallet = Keypair.fromSecretKey(Uint8Array.from(wallet));
+
+//   try {
+//     const { poll_id, option, optionId, voter_id } = await req.json();
+
+//     if (!poll_id || !option || !voter_id) {
+//       return NextResponse.json({ error: "poll_id, option, and voter_id are required" }, { status: 400 });
+//     }
+
+//     if (typeof poll_id !== 'string' || typeof option !== 'string' || typeof voter_id !== 'string') {
+//       return NextResponse.json({ error: "poll_id, option, voter_id must be strings" }, { status: 400 });
+//     }
+
+//     const voteData = {
+//       type: "vote",
+//       data: {
+//         poll_id,
+//         option,
+//         voter_id,
+//         timestamp: new Date().toISOString()
+//       }
+//     };
+
+//     const transaction = new Transaction().add(
+//       SystemProgram.transfer({
+//         fromPubkey: fundedWallet.publicKey,
+//         toPubkey: fundedWallet.publicKey,
+//         lamports: 1_000_000, 
+//       }),
+//       new TransactionInstruction({
+//         keys: [],
+//         programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+//         data: Buffer.from(JSON.stringify(voteData)),
+//       })
+//     );
+
+//     const { blockhash } = await connection.getLatestBlockhash();
+//     transaction.recentBlockhash = blockhash;
+//     transaction.feePayer = fundedWallet.publicKey;
+//     transaction.sign(fundedWallet);
+
+//     const rawTx = transaction.serialize();
+//     const txSignature = await connection.sendRawTransaction(rawTx);
+//     const confirmation = await connection.confirmTransaction(txSignature);
+
+//     // Optional: Prisma save
+//     if (prisma?.pendingVote) {
+//       await prisma.pendingVote.create({
+//         data: {
+//           pollId: Number(poll_id),
+//           optionId: Number(optionId),
+//           voterId: String(voter_id),
+//           txData: {
+//             txHash: txSignature,
+//             voteData
+//           }
+//         }
+//       });
+//     }
+
+//     return NextResponse.json({
+//       status: 'success',
+//       txSignature,
+//       explorerUrl: `https://explorer.solana.com/tx/${txSignature}?cluster=devnet`,
+//       voteData,
+//       confirmation
+//     });
+
+//   } catch (error: any) {
+//     console.error('Voting failed:', {
+//       error: error.message,
+//       stack: error.stack
+//     });
+    
+//     return NextResponse.json({ error: error.message || "Voting failed" }, { status: 500 });
+//   }
+// }
+
+
+
 import { Connection, Transaction, TransactionInstruction, PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { NextResponse } from 'next/server';
 import wallet from '@/wallet.json';
+import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
   const connection = new Connection('https://api.devnet.solana.com');
   const fundedWallet = Keypair.fromSecretKey(Uint8Array.from(wallet));
 
   try {
-    const { poll_id, option, voter_id = "anonymous" } = await req.json();
-    
-    // Validation
-    if (!poll_id || !option) {
-      return NextResponse.json(
-        { error: "poll_id and option are required" }, 
-        { status: 400 }
-      );
+    const { poll_id, option, optionId, voter_id } = await req.json();
+
+    // Input validation (unchanged)
+    if (!poll_id || !option || !voter_id) {
+      return NextResponse.json({ error: "poll_id, option, and voter_id are required" }, { status: 400 });
     }
 
-    if (typeof poll_id !== 'string' || typeof option !== 'string') {
-      return NextResponse.json(
-        { error: "poll_id and option must be strings" },
-        { status: 400 }
-      );
-    }
-
-    // Prepare vote data
     const voteData = {
       type: "vote",
       data: {
@@ -222,14 +411,13 @@ export async function POST(req: Request) {
         timestamp: new Date().toISOString()
       }
     };
-    
 
-    // Create transaction
+    // Create transaction (unchanged)
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: fundedWallet.publicKey,
         toPubkey: fundedWallet.publicKey,
-        lamports: 1_000_000, // 0.001 SOL
+        lamports: 1_000_000, 
       }),
       new TransactionInstruction({
         keys: [],
@@ -238,16 +426,40 @@ export async function POST(req: Request) {
       })
     );
 
-    // Finalize transaction
+    // Finalize and send transaction (unchanged)
     const { blockhash } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = fundedWallet.publicKey;
     transaction.sign(fundedWallet);
 
-    // Send transaction
     const rawTx = transaction.serialize();
     const txSignature = await connection.sendRawTransaction(rawTx);
+    
+    // Log the transaction signature to console
+    console.log(`✅ Vote transaction submitted:`, {
+      txSignature,
+      explorerUrl: `https://explorer.solana.com/tx/${txSignature}?cluster=devnet`,
+      poll_id,
+      option,
+      voter_id
+    });
+
     const confirmation = await connection.confirmTransaction(txSignature);
+
+    // Optional: Prisma save (unchanged)
+    if (prisma?.pendingVote) {
+      await prisma.pendingVote.create({
+        data: {
+          pollId: Number(poll_id),
+          optionId: Number(optionId),
+          voterId: String(voter_id),
+          txData: {
+            txHash: txSignature,
+            voteData
+          }
+        }
+      });
+    }
 
     return NextResponse.json({
       status: 'success',
@@ -258,17 +470,12 @@ export async function POST(req: Request) {
     });
 
   } catch (error: any) {
-    console.error('Voting failed:', {
+    console.error('❌ Voting failed:', {
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
+      timestamp: new Date().toISOString()
     });
     
-    return NextResponse.json(
-      { 
-        error: error.message || "Voting failed",
-        details: error.details || null
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message || "Voting failed" }, { status: 500 });
   }
 }

@@ -1,10 +1,10 @@
 import './globals.css';
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
-
-
-import { Providers } from "./provider"; 
-import ThemeScript from './ThemeScript'; // 👈 this is our client-only script component
+import "@/script/worker";
+import "@/script/scheduleJobs";
+import { Providers } from "./provider";
+import ThemeScript from './ThemeScript';
 
 export const metadata = {
   title: "BIIT Voting App",
@@ -15,11 +15,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <ThemeScript /> {/* 👈 only this runs client-side for theme init */}
+        <ThemeScript />
         <Providers>
           <Navbar />
           {children}
-          <Footer/>
+          <Footer />
         </Providers>
       </body>
     </html>

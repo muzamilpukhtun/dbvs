@@ -22,10 +22,13 @@
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
     "bull": "^4.16.5",
+    "bullmq": "^5.56.0",
     "crypto-browserify": "^3.12.1",
     "framer-motion": "^12.18.1",
+    "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
     "next": "15.3.2",
+    "next-auth": "^4.24.11",
     "node-cron": "^4.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -45,6 +48,9 @@
     "postcss": "^8.5.6",
     "prisma": "^6.8.2",
     "tailwindcss": "^4.1.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
     "webpack": "^5.99.9"
   }
 }
