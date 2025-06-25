@@ -48,8 +48,6 @@ if (job.name === "checkEndedPolls") {
   }
 }
 
-
-
   console.log(`✅ Queued ${endedPolls.length} ended polls for processing`);
 }
 

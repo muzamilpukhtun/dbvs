@@ -34,7 +34,10 @@ model Vote {
   optionId Int
   option   Option @relation(fields: [optionId], references: [id])
   voterId  String
+  txHash   String
+  status   String
 }
+
 
 model Option {
   id      Int    @id @default(autoincrement())

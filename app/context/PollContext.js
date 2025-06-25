@@ -49,39 +49,6 @@ export const PollProvider = ({ children }) => {
     }
   };
 
-  const fetchBlockchainData = async () => {
-    if (!Arid) return;
-    setLoadingVotes(true);
-    try {
-      // First trigger the worker to process votes
-      const processRes = await fetch(`/api/poll/process-votes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pollId: 'all' }) // Process all polls
-      });
-      
-      if (!processRes.ok) {
-        throw new Error('Failed to process votes');
-      }
-  
-      // Then get the user's specific votes
-      const res = await fetch("/api/poll/vote-count");
-      const data = await res.json();
-      
-      if (!data?.polls || !Array.isArray(data.polls)) {
-        console.warn("Invalid or empty polls data:", data);
-        return;
-      }
-  
-      const userVotes = data.polls.filter(v => String(v.voter_id) === String(Arid));
-      const ids = userVotes.map(v => v.poll_id);
-      setVotedPollIds(ids);
-    } catch (err) {
-      console.error("Error fetching votes:", err);
-    } finally {
-      setLoadingVotes(false);
-    }
-  };
 
   // Create new poll
   const createPoll = async (pollData) => {
