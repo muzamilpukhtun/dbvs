@@ -207,21 +207,34 @@ export const voteWorker = new Worker(
       if(pendingVotes){
            for (const vote of pendingVotes) {
         try {
-          const txStatus = await solanaConn.getConfirmedTransaction(vote.txData.txSignature);
-          console.log("tx status",txStatus);
+
+ const txHash = vote.txData?.txHash;
+
+    if (!txHash || typeof txHash !== "string") {
+      console.warn(`⚠️ Invalid txHash for vote ID ${vote.id}:`, txHash);
+      continue;
+    }
+
+    const txStatus = await solanaConn.getConfirmedTransaction(txHash);
+    console.log("tx status", txHash);
           if (txStatus) {
             await prisma.vote.create({
               data: {
                 pollId: vote.pollId,
                 optionId: vote.optionId,
                 voterId: vote.voterId,
-                txHash: vote.txData.txSignature,
+                txHash: txHash,
                 status: "CONFIRMED",
               },
             });
 
-            await prisma.pendingVote.delete({ where: { id: vote.id } });
+            // await prisma.pendingVote.delete({ where: { id: vote.id } });
+            await prisma.pendingVote.deleteMany({
+  where: { id: vote.id },
+});
             console.log(`✅ Vote confirmed for Poll ${vote.pollId}`);
+            await pollQueue.add("processPollVotes", { pollId: vote.pollId });
+
           }
         } catch (err) {
           console.error("❌ Error processing vote", err);
