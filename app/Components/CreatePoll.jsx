@@ -57,6 +57,11 @@ const CreatePoll = () => {
 
     if (result.success) {
       alert("Poll created successfully!");
+      setPollData({
+      pollName: "",
+      endDate: "",
+      options: ["", ""],
+    });
     } else {
       alert("Error: " + result.error);
     }
