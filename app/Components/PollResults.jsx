@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Loader from './Loader';
 
 const PollResultsPublic = () => {
   const [polls, setPolls] = useState([]);
@@ -36,7 +37,9 @@ const PollResultsPublic = () => {
       <h2 className="text-3xl font-bold text-center mb-6 dark:text-white text-black">Poll Results</h2>
 
       {loading ? (
-        <div className="text-center dark:text-gray-300 text-gray-600">Loading polls...</div>
+        <div className="text-center dark:text-gray-300 text-gray-600">
+          <Loader/>
+          </div>
       ) : (
         <div className="max-w-3xl mx-auto overflow-y-auto overflow-x-hidden" style={{ maxHeight: "calc(100vh - 150px)" }}>
           {polls.length === 0 ? (

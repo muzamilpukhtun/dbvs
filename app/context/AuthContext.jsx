@@ -1,5 +1,6 @@
 "use client"
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export const AuthContext = createContext()
 
@@ -7,6 +8,7 @@ export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [user, setUser] = useState(null)
   const [Arid, setArid] = useState(null)
+  const router = useRouter()
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -24,6 +26,23 @@ export function AuthProvider({ children }) {
       }
     }
   }, []);
+
+
+   const getCookie = (name) => {
+    if (typeof document !== 'undefined') {
+      const value = `; ${document.cookie}`
+      const parts = value.split(`; ${name}=`)
+      if (parts.length === 2) return parts.pop().split(';').shift()
+    }
+    return null
+  }
+
+  const setCookie = (name, value, days) => {
+    const date = new Date()
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
+    const expires = `expires=${date.toUTCString()}`
+    document.cookie = `${name}=${value}; ${expires}; path=/`
+  }
 
   const login = async (arid, password) => {
     try {
@@ -73,6 +92,9 @@ export function AuthProvider({ children }) {
     setUser(null);
     setArid(null);
   };
+
+
+
 
   const signup = async (userData) => {
     try {

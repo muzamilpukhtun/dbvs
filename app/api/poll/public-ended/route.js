@@ -9,6 +9,10 @@ export async function GET() {
         isResultAnnounced: true,
       },
       include: { options: true },
+    orderBy: {
+    createdAt: 'desc',  // Latest poll sabse pehle
+  },
+      take: 10, 
     });
 
     return Response.json({ polls });

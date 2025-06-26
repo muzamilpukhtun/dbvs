@@ -1,15 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import prisma from '@/lib/prisma';
-
-// export async function GET() {
-//   const allPolls = await prisma.poll.findMany({
-//     include: {
-//       options: true
-//     }
-//   });
-
-//   return NextResponse.json({ polls: allPolls });
-// }
 
 // app/poll/active
 import { NextResponse } from 'next/server';
@@ -26,7 +14,10 @@ export async function GET() {
     },
     include: {
       options: true
-    }
+    },
+    orderBy: {
+    createdAt: 'desc',  // Latest poll sabse pehle
+  },
   });
 
   return NextResponse.json({ polls: activePolls });

@@ -146,18 +146,23 @@ export const voteWorker = new Worker(
     const { pollId, hashList } = job.data;
 
     // 🗳️ Process Poll Votes
-    if (job.name === "processPollVotes") {
-      console.log(`🚀 Processing Poll ID: ${pollId}`);
+   if (job.name === "processPollVotes") {
+  const poll = await prisma.poll.findUnique({
+    where: { id: pollId },
+    include: { options: true },
+  });
 
-      const poll = await prisma.poll.findUnique({
-        where: { id: pollId },
-        include: { options: true },
-      });
+  if (!poll) return;
 
-      if (!poll) {
-        console.error(`❌ Poll ${pollId} not found`);
-        return;
-      }
+  if (poll.isResultAnnounced) {
+    console.log(`⏩ Poll ${poll.id} result already announced. Skipping.`);
+    return;
+  }
+
+  if (new Date(poll.endDate) > new Date()) {
+    console.log(`⏩ Poll ${poll.id} still active, skipping processing.`);
+    return;
+  }
 
       const voteCounts = new Map<string, number>();
       poll.options.forEach((opt) => voteCounts.set(opt.text.trim(), 0));
@@ -199,6 +204,26 @@ export const voteWorker = new Worker(
       console.log(`✅ Results saved for Poll ${pollId}`);
     }
 
+// 🔄 Checking End Polls
+    if (job.name === "checkEndedPolls") {
+  console.log("🔍 Checking ended polls...");
+
+  const endedPolls = await prisma.poll.findMany({
+    where: {
+      endDate: { lte: new Date() },
+      isResultAnnounced: false,
+    },
+    include: { options: true },
+  });
+
+  for (const poll of endedPolls) {
+    console.log(`📦 Queueing Poll ID ${poll.id} for processing`);
+    await pollQueue.add("processPollVotes", { pollId: poll.id });
+  }
+
+  console.log(`✅ Queued ${endedPolls.length} ended polls for processing`);
+}
+
     // 🔄 Process Pending Votes
     if (job.name === "processPendingVotes") {
       console.log("🔄 Processing pending votes...");
@@ -207,6 +232,21 @@ export const voteWorker = new Worker(
       if(pendingVotes){
            for (const vote of pendingVotes) {
         try {
+             // Check Poll Ended or Not
+      const poll = await prisma.poll.findUnique({
+        where: { id: vote.pollId },
+      });
+
+      if (!poll) {
+        console.warn(`⚠️ Poll ${vote.pollId} not found.`);
+        continue;
+      }
+
+      // ✅ Only process vote if poll has ended
+      if (new Date(poll.endDate) > new Date()) {
+        console.log(`⏩ Poll ${poll.id} still active, skipping vote processing.`);
+        continue;
+      }
 
  const txHash = vote.txData?.txHash;
 
@@ -217,25 +257,44 @@ export const voteWorker = new Worker(
 
     const txStatus = await solanaConn.getConfirmedTransaction(txHash);
     console.log("tx status", txHash);
-          if (txStatus) {
-            await prisma.vote.create({
+//           if (txStatus) {
+//             await prisma.vote.create({
+//               data: {
+//                 pollId: vote.pollId,
+//                 optionId: vote.optionId,
+//                 voterId: vote.voterId,
+//                 txHash: txHash,
+//                 status: "CONFIRMED",
+//               },
+//             });
+
+//             // await prisma.pendingVote.delete({ where: { id: vote.id } });
+//             await prisma.pendingVote.deleteMany({
+//   where: { id: vote.id },
+// });
+//             console.log(`✅ Vote confirmed for Poll ${vote.pollId}`);
+//             await pollQueue.add("processPollVotes", { pollId: vote.pollId });
+
+
+//           }
+if (txStatus) {
+  await prisma.vote.create({
               data: {
                 pollId: vote.pollId,
                 optionId: vote.optionId,
                 voterId: vote.voterId,
                 txHash: txHash,
                 status: "CONFIRMED",
-              },
-            });
+}});
+  await prisma.pendingVote.delete({ where: { id: vote.id } });
 
-            // await prisma.pendingVote.delete({ where: { id: vote.id } });
-            await prisma.pendingVote.deleteMany({
-  where: { id: vote.id },
-});
-            console.log(`✅ Vote confirmed for Poll ${vote.pollId}`);
-            await pollQueue.add("processPollVotes", { pollId: vote.pollId });
-
-          }
+  // Sirf jab poll khatam ho chuki ho tab processPollVotes lagao
+  const poll = await prisma.poll.findUnique({ where: { id: vote.pollId } });
+  
+  if (poll && new Date(poll.endDate) <= new Date() && !poll.isResultAnnounced) {
+    await pollQueue.add("processPollVotes", { pollId: vote.pollId });
+  }
+}
         } catch (err) {
           console.error("❌ Error processing vote", err);
         }
